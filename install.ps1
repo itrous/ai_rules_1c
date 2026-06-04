@@ -711,9 +711,14 @@ function Read-McpServers {
 
 # Known UI locale codes that may appear as the trailing path segment of
 # INFOBASE_PUBLISH_URL (the web-publication URL is typically
-# `http://host/<infobase>/<locale>/`). The HTTP-service endpoint is served
-# under `<host>/<infobase>/hs/<service>` — without the locale subpath — so the
-# locale must be stripped before substituting into MCP server URL templates.
+# `http://host/<infobase>/<locale>/`). Retained for two reasons: (1) the
+# `.dev.env` INFOBASE_PUBLISH_URL key is still used by /deploy-and-test for UI
+# tests, and (2) the placeholder-substitution helpers below stay available for
+# forward-compatibility. The current bsl-analyzer mcp-servers.json no longer
+# carries a {INFOBASE_PUBLISH_URL}-based MCP server URL (the old live-IB
+# 1c-data-mcp HTTP service is gone; live-IB access is now via the bsl-analyzer
+# 1C extension), so the locale-stripping path is dormant unless such a URL is
+# reintroduced.
 $script:KnownInfobaseLocales = @(
     'ru', 'en', 'uk', 'kk', 'be', 'de', 'fr', 'es', 'it', 'pl', 'tr',
     'vi', 'zh', 'ja', 'ka', 'lt', 'lv', 'hu', 'bg', 'ro', 'sk', 'cs',
@@ -776,11 +781,12 @@ function Resolve-McpServerPlaceholders {
 }
 
 function Test-McpHttpEndpoint {
-    # Probes an HTTP endpoint with a short timeout. Used to detect whether a
-    # 1C HTTP-service-based MCP server (`1c-data-mcp`) is reachable AND
-    # whether the publication allows anonymous access (no Basic auth) — the
-    # MCP client does not pass credentials, so HTTP 401 / 403 means the user
-    # must reconfigure the publication.
+    # Probes an HTTP endpoint with a short timeout. Used to detect whether an
+    # http (url-based) MCP server — `v8std` (public) or `1c-code-check-mcp` /
+    # 1С:Напарник (local wrapper on port 8007) — is reachable. Only http
+    # servers are probed; the stdio bsl-analyzer servers have no HTTP endpoint.
+    # An HTTP 401 / 403 means the service requires auth the MCP client does not
+    # supply (e.g. a missing / wrong NAPARNIK_TOKEN in the wrapper).
     #
     # Returns a hashtable:
     #   Code      — HTTP status code (int) when the server responded with one,
@@ -896,13 +902,14 @@ function ConvertTo-OpenCodeMcpKey {
     # outside [a-zA-Z0-9_-] with `_`, it does NOT force a leading letter). Some
     # providers — Moonshot/Kimi in particular — reject any function name that
     # does not start with a letter (`^[a-zA-Z_][a-zA-Z0-9-_]{2,63}$`), so a key
-    # like `1c-syntax-checker-mcp` produces `1c-syntax-checker-mcp_syntaxcheck`
+    # like `1c-code-check-mcp` produces `1c-code-check-mcp_check_1c_code`
     # and the whole request fails with "function name is invalid, must start
     # with a letter". Normalize the well-known `1c`/`1C` prefix to the readable
     # `onec`; guarantee any other non-letter-leading id also starts with a
-    # letter. Canonical ids in content/mcp-servers.json stay `1c-...`; only the
-    # OpenCode-rendered key changes (tool detection in /checkmcp keys off the
-    # bare tool names, not the server prefix, so it is unaffected).
+    # letter. The bsl-analyzer-* and v8std ids already start with a letter and
+    # pass through unchanged. Canonical ids in content/mcp-servers.json stay
+    # as-is; only the OpenCode-rendered key changes (tool detection in /checkmcp
+    # keys off the bare tool names, not the server prefix, so it is unaffected).
     param([string]$Id)
     $key = $Id
     if ($key -match '^1c(.*)$') { $key = 'onec' + $Matches[1] }
@@ -1593,8 +1600,8 @@ function Format-1cProjectMd {
     [void]$lines.Add('- Язык платформы: 1С (BSL); комментарии и UI-строки — на русском')
     [void]$lines.Add('- Стандарты ИТС, расширенные правилами проекта (см. `AGENTS.md` и каталог on-demand правил активного инструмента)')
     [void]$lines.Add('- Запрет на тернарный оператор `?(...)`, `Сообщить()`, обращение к реквизитам через точку')
-    [void]$lines.Add('- Перед написанием кода — поиск по `templatesearch` / `codesearch` / `search_code`')
-    [void]$lines.Add('- После написания кода — `syntaxcheck` → `check_1c_code` → `review_1c_code` (≤ 3 раза за цикл)')
+    [void]$lines.Add('- Перед написанием кода — поиск по `bsl-analyzer-workspace search` (`search_code` / `find_code`) и `graph` / `metadata`')
+    [void]$lines.Add('- После написания кода — `diagnostics file` на изменённом модуле → `check_1c_code` → `review_1c_code` (≤ 3 раза за цикл)')
     [void]$lines.Add('- Полный список запретов и стандартов — `AGENTS.md`, раздел *Forbidden Calls and Constructs*')
     return ($lines -join "`n") + "`n"
 }
@@ -2019,55 +2026,52 @@ function Invoke-McpPhase {
     )
     $servers = Read-McpServers -Root $SourceRoot
 
-    # Substitute {INFOBASE_PUBLISH_URL} placeholders in server URLs from the
-    # project's .dev.env (Place-DevEnv runs earlier in the pipeline so the
-    # file is in place by now). Servers whose placeholder cannot be resolved
-    # keep the literal placeholder in the rendered config — the user sees a
-    # clear TODO marker and a warning telling them what to fill in.
+    # The current bsl-analyzer template carries no {INFOBASE_PUBLISH_URL}
+    # placeholder (the old live-IB 1c-data-mcp server is gone — live-IB access
+    # is now provided by the bsl-analyzer 1C extension, not an HTTP service in
+    # mcp-servers.json). Resolve-McpServerPlaceholders is kept as a harmless
+    # no-op for forward/backward compatibility: if a server URL ever reintroduces
+    # the placeholder it is still substituted from .dev.env, otherwise nothing
+    # happens. No warning is emitted when no server uses the placeholder.
     $infobaseBase = Get-InfobasePublishUrlBase -Root $Root
     $unresolved = Resolve-McpServerPlaceholders -Servers $servers -InfobaseBase $infobaseBase
     if ($unresolved.Count -gt 0) {
         Write-Warn ("  MCP config: следующие серверы используют плейсхолдер {INFOBASE_PUBLISH_URL}, но INFOBASE_PUBLISH_URL в .dev.env пуст: " + ($unresolved -join ', ') + '.')
-        Write-Warn '  Заполните INFOBASE_PUBLISH_URL в .dev.env (URL веб-публикации ИБ, напр. http://localhost/<infobase_name>/ru/) и запустите установщик повторно — MCP-конфиг будет перерендерен с подставленным URL.'
+        Write-Warn '  Заполните INFOBASE_PUBLISH_URL в .dev.env и запустите установщик повторно — MCP-конфиг будет перерендерен с подставленным URL.'
     }
 
-    # Probe HTTP-service-based MCP servers (1c-data-mcp). The MCP HTTP client
-    # does not pass any Authorization header to /hs/<service>, so the 1C
-    # publication MUST allow anonymous access to the endpoint — otherwise the
-    # server returns HTTP 401 / 403 and the MCP tools simply do not appear in
-    # the agent's session. We probe right after substitution so the user is
-    # told at install time, not later when they wonder why `1c-data-mcp` is
-    # missing from the tool list.
+    # Probe ONLY http (url-based) MCP servers — v8std and 1c-code-check-mcp
+    # (1С:Напарник). The stdio servers (bsl-analyzer-workspace /
+    # bsl-analyzer-reference: a `command`, no `url`) have no HTTP endpoint to
+    # ping — skip them here; the installer cannot meaningfully test a stdio
+    # server beyond whether its `command` resolves, which the client does at
+    # session start. A probe response (any HTTP status, even 4xx) means the
+    # endpoint is listening; a 'down' result is non-blocking (the http server may
+    # simply not be running yet — v8std is public, Напарник needs its local
+    # wrapper + NAPARNIK_TOKEN). We probe right after rendering so the user is
+    # told at install time rather than wondering later why a tool is missing.
     foreach ($s in $servers) {
-        if (-not $s.url) { continue }
-        if ($s.url -match '\{INFOBASE_PUBLISH_URL\}') { continue }  # already warned above
-        if ($s.url -notmatch '/hs/') { continue }                   # only HTTP-service URLs
+        if (-not $s.url) { continue }                              # stdio server — no HTTP probe
+        if ($s.url -match '\{INFOBASE_PUBLISH_URL\}') { continue } # unresolved placeholder
         $probe = Test-McpHttpEndpoint -Url $s.url -TimeoutSec 3
         switch -Regex ([string]$probe.Code) {
+            '^(200|201|204|405|406|400)$' {
+                Write-Info ("  MCP config: " + $s.id + " — endpoint " + $s.url + " отвечает (HTTP " + $probe.Code + '), OK.')
+            }
             '^401$' {
-                Write-Warn ("  MCP config: " + $s.id + " — endpoint " + $s.url + " вернул HTTP 401 (требуется Basic-аутентификация).")
-                Write-Warn '  MCP-клиент НЕ передаёт логин/пароль на /hs/<service> — публикация ИБ должна разрешать анонимный доступ к этому HTTP-сервису:'
-                Write-Warn '    1. В default.vrd публикации укажите технического пользователя без пароля для HTTP-сервиса:'
-                Write-Warn '         <ws publishByDefault="true"/>'
-                Write-Warn '         <usr name="МCPПользователь" pwd=""/>   (или <usr name="" pwd=""/> для анонимного доступа, если в ИБ разрешены пустые пароли).'
-                Write-Warn '    2. Либо в админке кластера 1С разрешите пустые пароли и заведите пользователя ИБ без пароля с ролью, позволяющей вызов HTTP-сервиса mcp.'
-                Write-Warn '    3. После изменения публикации перезапустите веб-сервер (IIS / Apache) и повторите проверку: Invoke-WebRequest "' + $s.url + '" -Method Get -UseBasicParsing.'
+                Write-Warn ("  MCP config: " + $s.id + " — endpoint " + $s.url + " вернул HTTP 401 (требуется аутентификация). Для 1С:Напарника убедитесь, что обёртка 1c-code-check-mcp запущена и читает NAPARNIK_TOKEN из своего окружения.")
             }
             '^403$' {
-                Write-Warn ("  MCP config: " + $s.id + " — endpoint " + $s.url + " вернул HTTP 403 (пользователь по умолчанию не имеет прав на HTTP-сервис).")
-                Write-Warn '  У пользователя, заданного в публикации (default.vrd → <usr name=...>), должны быть права на роль, разрешающую вызов HTTP-сервиса mcp.'
-            }
-            '^(200|201|204|405|406|400)$' {
-                Write-Info ("  MCP config: " + $s.id + " — endpoint " + $s.url + " отвечает анонимно (HTTP " + $probe.Code + '), OK.')
+                Write-Warn ("  MCP config: " + $s.id + " — endpoint " + $s.url + " вернул HTTP 403 (доступ запрещён). Проверьте токен/настройки сервиса.")
             }
             '^4\d{2}$' {
-                Write-Info ("  MCP config: " + $s.id + " — endpoint " + $s.url + " ответил HTTP " + $probe.Code + '. Проверьте, что HTTP-сервис `mcp` опубликован и не требует аутентификации.')
+                Write-Info ("  MCP config: " + $s.id + " — endpoint " + $s.url + " ответил HTTP " + $probe.Code + '. Это не блокирует установку; MCP-хендшейк выполнит клиент при старте сессии.')
             }
             '^5\d{2}$' {
-                Write-Info ("  MCP config: " + $s.id + " — endpoint " + $s.url + " ответил HTTP " + $probe.Code + ' (ошибка сервера). Проверьте журнал веб-сервера и состояние ИБ.')
+                Write-Info ("  MCP config: " + $s.id + " — endpoint " + $s.url + " ответил HTTP " + $probe.Code + ' (ошибка сервера). Проверьте состояние сервиса.')
             }
             'down' {
-                Write-Info ("  MCP config: " + $s.id + " — endpoint " + $s.url + " не отвечает (веб-публикация не запущена или недоступна). Это не блокирует установку: повторите проверку через /checkmcp после старта публикации.")
+                Write-Info ("  MCP config: " + $s.id + " — endpoint " + $s.url + " не отвечает (сервис не запущен или недоступен). Это не блокирует установку: для 1С:Напарника запустите локальную обёртку (порт 8007) с NAPARNIK_TOKEN; v8std — публичный HTTP, требует доступа в интернет. Повторите проверку через /checkmcp.")
             }
             default {
                 Write-Info ("  MCP config: " + $s.id + " — не удалось проверить endpoint " + $s.url + " (status=" + $probe.Code + '). Это не блокирует установку.')
@@ -2663,10 +2667,11 @@ function Invoke-Init {
     Write-Section 'Phase 6d: OpenSpec project.md (1C autodetect)'
     Invoke-OpenSpecProjectMd -Root $Root -Manifest $manifest
 
-    # .dev.env must be placed BEFORE the MCP phase because some MCP server
-    # URLs in `content/mcp-servers.json` reference {INFOBASE_PUBLISH_URL} —
-    # the installer substitutes that placeholder from the freshly-written
-    # .dev.env when rendering per-tool MCP configs.
+    # .dev.env is placed BEFORE the MCP phase. The current bsl-analyzer
+    # template carries no {INFOBASE_PUBLISH_URL} placeholder, but the ordering
+    # is kept for forward-compatibility: if any MCP server URL ever reintroduces
+    # a .dev.env-derived placeholder, the file is already in place when the MCP
+    # configs are rendered (Resolve-McpServerPlaceholders is a no-op otherwise).
     Write-Section 'Phase 7: .dev.env (project parameters, single source of truth)'
     Place-DevEnv -Root $Root -SourceRoot $sourceRoot -Manifest $manifest
 
@@ -2867,9 +2872,9 @@ function Invoke-Update {
     Write-Section 'OpenSpec project.md (update / 1C autodetect)'
     Invoke-OpenSpecProjectMd -Root $Root -Manifest $manifest
 
-    # .dev.env runs before MCP so that {INFOBASE_PUBLISH_URL} placeholders in
-    # `content/mcp-servers.json` resolve against the actual project value
-    # when MCP configs are re-rendered.
+    # .dev.env runs before MCP for ordering forward-compatibility (the current
+    # bsl-analyzer template has no {INFOBASE_PUBLISH_URL} placeholder; the
+    # substitution step is a no-op unless a server URL reintroduces one).
     Write-Section '.dev.env (update — placed only if missing)'
     Place-DevEnv -Root $Root -SourceRoot $sourceRoot -Manifest $manifest
 
@@ -2919,9 +2924,9 @@ function Invoke-Add {
     Invoke-PlacePhase -Root $Root -SourceRoot $sourceRoot -ActiveTools $activeTools -Adapters $adapters -Manifest $manifest
     Invoke-OpenSpecArtifacts -Root $Root -SourceRoot $sourceRoot -ActiveTools $activeTools -Manifest $manifest
 
-    # Place .dev.env BEFORE the MCP phase so {INFOBASE_PUBLISH_URL}
-    # placeholders in `content/mcp-servers.json` substitute against the
-    # actual project value when rendering the newly-added tool's MCP config.
+    # Place .dev.env BEFORE the MCP phase (ordering forward-compatibility; the
+    # current bsl-analyzer template has no {INFOBASE_PUBLISH_URL} placeholder,
+    # so the substitution step is a no-op unless a server URL reintroduces one).
     Place-DevEnv -Root $Root -SourceRoot $sourceRoot -Manifest $manifest
     Invoke-McpPhase -Root $Root -SourceRoot $sourceRoot -ActiveTools $activeTools -Adapters $adapters -Manifest $manifest
 

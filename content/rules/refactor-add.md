@@ -18,17 +18,17 @@ Refactoring is high-risk because the user-visible behaviour must stay identical 
 
 Run the full sequence from `tooling-playbooks.md → Refactoring` before touching the first line:
 
-- `get_object_dossier` — passport of the object being refactored.
-- `trace_impact` → fallback `graph_dependencies` (`direction="downstream"`) — what breaks on change.
-- `trace_call_chain` → fallback `get_method_call_hierarchy` (`direction="callers"`) — every caller of the routine.
-- `find_objects_using_object` / `find_usages_of_object` — every type reference before renaming / removing / changing structure.
-- For registers — `find_register_movement_docs` — every document that posts movements there.
+- `metadata` action `object` (with `graph` action `node`) — structural passport of the object being refactored.
+- `graph` action `neighbors` (`dir` filter for downstream) / `callees` — what breaks on change.
+- `graph` action `callers` (`edge_kinds=[call]`) — every caller of the routine; `graph resolve` first to get the durable node id.
+- `graph` action `neighbors` filtered on the data-reference edge kinds (`query_ref`, `data_binding`, `manager_access`, `contains`, …) — every type reference before renaming / removing / changing structure.
+- For registers — `graph` action `neighbors` with the register-movement edge kind — every document that posts movements there (partial coverage).
 
 If the impact-analysis MCPs are not exposed in the session, follow the graceful-degradation procedure from `verification-checklist.md → Gate 4` — do not refactor blind.
 
 ## Post-refactor verification
 
-- `search_code` (`detail_level="L3"`, high `top_k`) → fallback `codesearch` — confirm no remaining references to the old names / patterns.
+- `search` action `find_code` (lexical / FTS, raise the result limit) → `search_code` (semantic) for behavioural matches; drill into a full body via `graph` action `node` `detail=bodies` using the returned `graph_id` — confirm no remaining references to the old names / patterns.
 - Full closing gate — `verification-checklist.md` (every gate, no skipping).
 - If the refactor is large enough to enter the subagent pipeline — `subagent-pipeline.md → Stage 3` (delegate to `1c-refactoring`).
 

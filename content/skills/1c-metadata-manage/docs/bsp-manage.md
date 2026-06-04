@@ -400,10 +400,10 @@ No script files were brought into `tools/` — the operations are pure module-te
 
 ## MCP Integration
 
-- **ssl_search** — Find SSL module methods for BSP registration and verify correct API method names.
-- **metadatasearch** — Verify target metadata object names.
-- **get_metadata_details** — Get full structure of target objects for registration.
-- **codesearch** — Find existing handler patterns in the codebase.
+- **`search` action `search_code` / `find_code`** (bsl-analyzer-workspace) over the project's БСП modules (in `src/cf`) — Find SSL module methods for BSP registration and verify correct API method names; **v8std** for БСП-related standards, `bsl-analyzer-reference` for the platform API behind them.
+- **`metadata` action `tree`** — Verify target metadata object names; `graph` action `resolve` for exact name resolution.
+- **`metadata` action `object`** — Get full structure of target objects for registration.
+- **`search` action `find_code`** (lexical) / **`search_code`** (semantic) — Find existing handler patterns in the codebase.
 
 ## SDD Integration
 

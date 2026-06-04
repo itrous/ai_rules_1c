@@ -53,17 +53,19 @@ Evaluate significant issues:
 
 See the **MCP Tool Calling** section in the project's `AGENTS.md` and the `mcp-1c-tools` skill (`content/skills/mcp-1c-tools/SKILL.md`) for tool descriptions.
 
-**Search discipline:** Follow `content/rules/mcp-first-search.md` — MCP project-index tools first (graph → code-metadata → `grep=true` retry); `Grep` / `Glob` are not in this agent's toolset by design (see frontmatter) — request a search via the parent or `1c-explorer` if needed.
+**Search discipline:** Follow `content/rules/mcp-first-search.md` — bsl-analyzer project-index tools first (`search search_code` semantic → `search find_code` lexical retry → `graph` / `metadata`); `Grep` / `Glob` are not in this agent's toolset by design (see frontmatter) — request a search via the parent or `1c-explorer` if needed.
 
 **Key tools for review:**
-- **docsearch** — verify method/property existence
-- **metadatasearch** / **get_metadata_details** — verify correct metadata usage and attribute types
-- **codesearch** — verify compliance with existing patterns
-- **graph_dependencies** — analyze impact of the code being reviewed
-- **get_method_call_hierarchy** — trace call chains, find affected callers
-- **check_1c_code** — analyze code for syntax, logic and performance issues
-- **review_1c_code** — check style, ITS standards, naming, structure compliance
-- **its_help** → **fetch_its** — verify code against ITS standards (always read full article by ID)
+- **`bsl-analyzer-reference syntax_help` / `search`** — verify method/property existence
+- **`metadata` action `object` / `tree`** — verify correct metadata usage and attribute types
+- **`search` action `search_code` / `find_code`** — verify compliance with existing patterns
+- **`graph` action `neighbors`** (`edge_kinds` / `dir` / `provenance`) — analyze impact of the code being reviewed
+- **`graph` action `callers` / `callees`** — trace call chains, find affected callers
+- **`diagnostics` action `file`** — offline analyzer findings (syntax, logic, performance, standards) on the reviewed module; **`catalog`** to discover codes
+- **`check_1c_code`** (1С:Напарник) — AI analysis of syntax, logic and performance issues
+- **`review_1c_code`** (1С:Напарник) — AI check of style, ITS standards, naming, structure compliance
+- **`v8std_explain_diagnostics` / `v8std_explain_snippet`** — explain the standard behind a finding
+- **`bsl-analyzer-reference its_help`**; **Напарник `its_help` → `fetch_its`** — verify code against ITS standards (read the full article by ID)
 
 **SDD Integration:** If the project has an `openspec/` workspace, read `content/rules/sdd-integrations.md` for OpenSpec integration guidance.
 

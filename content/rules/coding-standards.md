@@ -24,7 +24,7 @@ After any code edit, perform an internal review: style, readability, correctness
 
 ## Code Reuse
 
-Before writing new code — check common and manager modules for an existing export method that can be reused. Use `search_function`, `ssl_search`, `templatesearch`, and `codesearch` **before** writing.
+Before writing new code — check common and manager modules for an existing export method that can be reused. Use `graph` action `resolve` (name → node), `search` action `search_code` (semantic) / `find_code` (lexical), and a `search` over the project's БСП modules (in `src/cf`) **before** writing.
 
 ## Module Regions
 
@@ -34,7 +34,7 @@ Canonical region names — Russian, БСП-style. Templates per module type (com
 
 Authoritative rules and the formatting template — `dev-standards-architecture.md §3 → "Queries"`. Headlines:
 
-- Verify metadata before writing a query (`metadatasearch` / `get_metadata_details`).
+- Verify metadata before writing a query (`metadata` action `object` / `tree`, `graph` action `resolve`).
 - No queries inside loops — use batch queries with temporary tables (`ВТ_*`).
 - Always parameterize (`Запрос.УстановитьПараметр()`), never concatenate strings.
 - Always use `КАК` aliases. Use `ПЕРВЫЕ N` when only a subset is needed.

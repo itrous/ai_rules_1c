@@ -1,6 +1,6 @@
 ---
 name: handoff
-description: "Compact the current conversation into a self-contained handoff document so a fresh agent (new chat, another machine, another AI client) can continue the work without re-discovering the context. References durable artifacts (`openspec/`, `memory.md`, commits, `1c-templates-mcp` notes) instead of duplicating them. Use when the user says 'handoff', 'compact session', 'save context for continuation', or invokes `/handoff`."
+description: "Compact the current conversation into a self-contained handoff document so a fresh agent (new chat, another machine, another AI client) can continue the work without re-discovering the context. References durable artifacts (`openspec/`, `memory.md`, commits, host-agent project-memory notes) instead of duplicating them. Use when the user says 'handoff', 'compact session', 'save context for continuation', or invokes `/handoff`."
 argument-hint: "Optional: focus of the next session, or a target path/folder for the handoff file."
 ---
 
@@ -54,7 +54,7 @@ Bulleted list of real unresolved questions (architectural forks, waiting for the
 Only include the current session diff. If nothing changed, omit the section.
 
 ## Verification State
-Which gates from `verification-checklist.md` passed / failed / were skipped. Latest `syntaxcheck` / `check_1c_code` / `review_1c_code` result in brief (error count, key messages).
+Which gates from `verification-checklist.md` passed / failed / were skipped. Latest `diagnostics file` / `check_1c_code` / `review_1c_code` result in brief (error count, key messages).
 
 ## Next Steps
 1-5 imperative items ("Check movements for `РегистрНакопления.<Имя>`", "Finish `ОбработкаПроведения` for document `<Имя>`").
@@ -62,13 +62,13 @@ Which gates from `verification-checklist.md` passed / failed / were skipped. Lat
 ## What To Load Next Session
 - **Subagents**: `1c-<name>` when the task matches their role (see `subagents.md`).
 - **On-demand rules**: `<name>.md` based on the task trigger (see `AGENTS.md → Additional rules`).
-- **MCP tools**: especially relevant tools (`get_object_dossier` for X, `trace_impact` before refactoring Y, `ssl_search` for topic Z).
+- **MCP tools**: especially relevant tools (`metadata object` for X, `graph neighbors`/`callers` before refactoring Y, `search search_code` over the БСП modules for topic Z).
 - **Slash commands**: `/opsx:apply` when there is an active OpenSpec proposal, `/getconfigfiles` for metadata re-export, etc.
 
 ## Links (DO NOT copy content)
 - `openspec/changes/<id>/proposal.md`, `design.md`, `tasks.md`
 - `memory.md` — relevant sections
-- `1c-templates-mcp` notes — `recall` keys: `<term1>`, `<term2>`
+- Host-agent project-memory notes — keys / terms: `<term1>`, `<term2>`
 - Commits / PR / Issue
 - ITS articles, platform documentation pages
 ```
@@ -83,11 +83,11 @@ Which gates from `verification-checklist.md` passed / failed / were skipped. Lat
 ## After writing
 
 1. Tell the user the absolute path of the created file and its line count.
-2. If the session produced corrections / facts that may qualify for `memory.md` or `1c-templates-mcp` (`remember`) under `AGENTS.md → Project memory`, **list them separately** as candidates for long-term memory. Do not save automatically (`memory.md` is strict, `remember` is targeted).
+2. If the session produced corrections / facts that may qualify for the host agent's project memory (`memory.md` / `AGENTS.md → Project memory`), **list them separately** as candidates for long-term memory. Do not save automatically (`memory.md` is strict).
 
 ## Boundaries
 
-- Handoff is a session artifact, not configuration and not code. Do not run `syntaxcheck` / `check_1c_code` / `review_1c_code` against it.
+- Handoff is a session artifact, not configuration and not code. Do not run `diagnostics file` / `check_1c_code` / `review_1c_code` against it.
 - Handoff **does not replace** an OpenSpec proposal. If the task requires a proposal and it does not exist yet, additionally suggest `/opsx:propose` and reference the future ID from the handoff.
-- Handoff **does not duplicate** `memory.md` and `recall` notes. Memory and handoff are different channels (see `AGENTS.md → Project memory`).
+- Handoff **does not duplicate** `memory.md` and host-agent project-memory notes. Memory and handoff are different channels (see `AGENTS.md → Project memory`).
 - Handoff is written in normal grammar, not caveman style, so the next agent can read it without ambiguity.

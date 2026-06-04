@@ -137,12 +137,12 @@ The PowerShell scripts under `tools/1c-subsystem-manage/scripts/` were refreshed
 
 ## MCP Integration
 
-- **get_object_dossier** — Comprehensive structural passport of objects before inclusion (structure, forms, dependencies, subscriptions, roles).
-- **metadatasearch** — Verify that objects referenced in subsystem content exist in the configuration.
-- **get_metadata_details** — Get structure of objects being included in the subsystem.
-- **trace_impact** — Recursive dependency analysis for subsystem composition: find all objects that depend on or are depended upon by the objects being included (preferred over `graph_dependencies` for deep analysis).
-- **graph_dependencies** — Flat dependency overview between objects.
-- **business_search** — Find related objects to include by natural language description.
+- **`metadata` action `object`** (bsl-analyzer-workspace) — Structural passport of objects before inclusion (attributes, tabular sections, forms); pair with `graph` action `node`/`neighbors` for dependencies.
+- **`metadata` action `tree`** — Verify that objects referenced in subsystem content exist in the configuration; `graph` action `resolve` for exact name resolution.
+- **`metadata` action `object`** — Get structure of objects being included in the subsystem.
+- **`graph` action `neighbors`** — Dependency analysis for subsystem composition: find all objects that depend on or are depended upon by the objects being included (filter `edge_kinds` / `dir` / `provenance`).
+- **`graph` action `callers` / `callees`** — Dependency overview between objects.
+- Semantic "related objects" search: there is no metadata-description index in this stack — use `metadata` action `tree` + `search` action `search_code`, or 1С:Напарник `ask_1c_ai` as a hint (never authority).
 
 ## SDD Integration
 

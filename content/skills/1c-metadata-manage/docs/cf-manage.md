@@ -129,14 +129,13 @@ The PowerShell scripts under `tools/1c-cf-manage/scripts/` were refreshed from [
 
 ## MCP Integration
 
-- **get_object_dossier** — Comprehensive structural passport of existing configuration objects (structure, forms, dependencies, code, roles) in one call.
-- **metadatasearch** — Explore existing configuration structure, verify object names.
-- **get_metadata_details** — Get full object structure for existing configuration objects.
-- **metadatasearch** (`names_only=true`) — Find similar configuration objects as XML reference examples.
-- **get_xsd_schema** — Get XSD schema for configuration XML. Use before generating Configuration.xml.
-- **verify_xml** — Validate generated configuration XML against XSD.
-- **compare_base_and_extension** — Compare configuration objects with their extension counterparts when working with configurations that have extensions.
-- **docsearch** — Platform documentation on configuration properties.
+- **`metadata` action `object`** (bsl-analyzer-workspace) — Structural passport of existing configuration objects (attributes, tabular sections, resources, forms) in one call; pair with `graph` action `node`/`neighbors` for dependencies and code.
+- **`metadata` action `tree`** — Explore existing configuration structure, verify object names; `graph` action `resolve` for exact name resolution.
+- **`metadata` action `object`** — Get full object structure for existing configuration objects.
+- **`metadata` action `tree`** — Find similar configuration objects as XML reference examples.
+- Validate generated configuration XML against XSD using this skill's XML/XSD tooling (no dedicated `get_xsd_schema`/`verify_xml` MCP tool in this stack); run **`diagnostics` action `file`** for analyzer findings.
+- Base-vs-extension comparison: there is no automated structural diff tool in this stack — inspect both via `metadata` action `object` / `graph` action `node` and diff manually, or use the `cfe-manage` tooling of this skill.
+- **`bsl-analyzer-reference search` / `syntax_help`** — Platform documentation on configuration properties.
 
 ## SDD Integration
 

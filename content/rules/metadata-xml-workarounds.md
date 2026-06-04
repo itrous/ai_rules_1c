@@ -77,7 +77,7 @@ When adding metadata objects — also update `Configuration.xml` (`<childObjects
 
 Whenever editing metadata XML by hand, after the change run:
 
-- `verify_xml` from `1c-code-metadata-mcp` against the appropriate XSD (`get_xsd_schema` first if unsure of the type).
+- Validate against the appropriate XSD using the `1c-metadata-manage` skill's XML/XSD tooling (there is no dedicated `verify_xml` MCP tool in this stack); run `diagnostics` (action `file`) to surface metadata findings.
 - Then a sanity load via `1c-metadata-manage/tools/1c-meta-validate/scripts/meta-validate.ps1`.
 
 This catches structural issues (missing required elements, wrong type names, broken references) before they reach the platform.

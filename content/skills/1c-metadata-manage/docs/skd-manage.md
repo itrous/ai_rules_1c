@@ -443,15 +443,14 @@ The PowerShell scripts under `tools/1c-skd-{compile,edit,info,validate}/scripts/
 
 ## MCP Integration
 
-- **get_object_dossier** — Comprehensive structural passport of the object for DCS data set fields: attributes, tabular parts, dimensions, resources, and their types in one call.
-- **metadatasearch** — Verify object and attribute names used in queries; cross-reference field names with actual metadata objects.
-- **get_metadata_details** — Get exact attribute types and tabular part structure for objects used in DCS data sets.
-- **search_code** — Find existing BSL code that builds DCS queries or modifies DCS programmatically (prefer over Grep; supports semantic/fulltext/hybrid search).
-- **metadatasearch** (`names_only=true`) — Find similar metadata objects for DCS schema XML reference.
-- **get_xsd_schema** — Get XSD schema for DCS XML (`object_type="СКД"`). Use before generating schema XML.
-- **verify_xml** — Validate generated DCS XML against XSD. Always validate before committing.
-- **templatesearch** — Find similar DCS patterns in the codebase.
-- **docsearch** — Look up valid DCS element types and properties when investigating validation errors; DCS platform documentation.
+- **`metadata` action `object`** (bsl-analyzer-workspace) — Structural passport of the object for DCS data set fields: attributes, tabular parts, dimensions, resources, and their types.
+- **`metadata` action `tree`** — Verify object and attribute names used in queries; cross-reference field names with actual metadata objects; `graph` action `resolve` for exact name resolution.
+- **`metadata` action `object`** — Get exact attribute types and tabular part structure for objects used in DCS data sets.
+- **`search` action `search_code`** (semantic) / **`find_code`** (lexical) — Find existing BSL code that builds DCS queries or modifies DCS programmatically (prefer over Grep).
+- **`metadata` action `tree`** — Find similar metadata objects for DCS schema XML reference.
+- Validate generated DCS XML against XSD using this skill's XML/XSD tooling (no dedicated `get_xsd_schema`/`verify_xml` MCP tool in this stack); run **`diagnostics` action `file`** for analyzer findings. Always validate before committing.
+- **`search` action `search_code` / `find_code`** — Find similar DCS patterns in the codebase (no template-library MCP in this stack; search the real project code, plus **v8std** for canonical patterns).
+- **`bsl-analyzer-reference search` / `syntax_help`** — Look up valid DCS element types and properties when investigating validation errors; DCS platform documentation.
 
 ## SDD Integration
 

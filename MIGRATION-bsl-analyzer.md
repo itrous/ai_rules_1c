@@ -87,7 +87,7 @@ Most bsl-analyzer tools are **action-dispatched**: one tool name + an `action` p
 ### Index admin
 | comol tool | This edition |
 |---|---|
-| `stats` | `search` action `status`, `graph` action `status`, `diagnostics status` |
+| `stats` | `search` action `status`, `graph` action `status`, `diagnostics catalog` (diagnostics has no `status` action) |
 | `reindex` (forced rebuild) | **partial gap** — bsl-analyzer rebuilds the index lazily on file change / session resume; there is no documented force-wipe-and-rebuild tool. The `status` actions report build progress |
 
 ## Capability gaps (no direct bsl-analyzer equivalent)

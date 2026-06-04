@@ -381,11 +381,10 @@ The PowerShell scripts under `tools/1c-role-{compile,info,validate}/scripts/` we
 
 ## MCP Integration
 
-- **metadatasearch** — Verify metadata object names when defining rights; verify objects referenced in role rights exist in the configuration.
-- **get_metadata_details** — Get full object structure to understand which attributes/tabular parts need specific access rights.
-- **get_xsd_schema** — Get XSD schema for role XML (`object_type="Роль"`). Use before generating role definitions.
-- **verify_xml** — Validate generated role XML against XSD.
-- **ssl_search** — Find SSL role patterns.
+- **`metadata` action `tree`** (bsl-analyzer-workspace) — Verify metadata object names when defining rights; verify objects referenced in role rights exist in the configuration; `graph` action `resolve` for exact name resolution.
+- **`metadata` action `object`** — Get full object structure to understand which attributes/tabular parts need specific access rights.
+- Validate generated role XML against XSD using this skill's XML/XSD tooling (no dedicated `get_xsd_schema`/`verify_xml` MCP tool in this stack); run **`diagnostics` action `file`** for analyzer findings.
+- **`search` action `search_code` / `find_code`** over the project's БСП modules (in `src/cf`) — Find SSL role patterns; **v8std** for role-related standards.
 
 ## SDD Integration
 

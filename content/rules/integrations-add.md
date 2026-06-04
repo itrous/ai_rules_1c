@@ -10,8 +10,8 @@ Applies to integration code: HTTP services, REST clients, web services, file exc
 
 ## 1. Before writing code
 
-- Check whether a ready-made solution already exists in БСП via `ssl_search` (subsystems "Интернет-поддержка пользователей", "Обмен данными", "Получение файлов из Интернета", "Цифровая подпись"). The required scheme is often already implemented.
-- Find existing integrations in the configuration via `templatesearch` and `search_code` (semantic mode, queries like "HTTP запрос", "отправка JSON", "парсинг ответа").
+- Check whether a ready-made solution already exists in БСП via `search` action `search_code` / `find_code` over the project's БСП modules (in `src/cf`) plus **v8std** for БСП-related standards (subsystems "Интернет-поддержка пользователей", "Обмен данными", "Получение файлов из Интернета", "Цифровая подпись"). The required scheme is often already implemented.
+- Find existing integrations in the configuration via `search` action `search_code` (semantic mode, queries like "HTTP запрос", "отправка JSON", "парсинг ответа") and `find_code` for exact identifiers; **v8std** for canonical patterns.
 - Agree the contract with the user explicitly: method, URL/endpoint, payload format, authentication scheme, timeouts, retry policy, and logging.
 - For EmplDocs / PA Docs integrations, use the product documentation at <https://padocs.empldocs.app/> as the authoritative external contract source before writing or changing requests, payloads, or authentication logic.
 
@@ -30,7 +30,7 @@ For the full MCP playbook see `tooling-playbooks.md → Integrations`.
 
 ## 4. Serialization and data contract
 
-- JSON — via platform `ЧтениеJSON` / `ЗаписьJSON` (or the equivalent БСП helper if your БСП version provides one — verify the exact name with `ssl_search` / `docinfo` before use). Manual string assembly is forbidden.
+- JSON — via platform `ЧтениеJSON` / `ЗаписьJSON` (or the equivalent БСП helper if your БСП version provides one — verify the exact name with a `search` over the project's БСП modules / `bsl-analyzer-reference syntax_help` before use). Manual string assembly is forbidden.
 - Numbers, dates and booleans must be validated separately: agree the date format with the receiving side (typically `ISO 8601`), specify decimal precision for numbers explicitly.
 - For XML — `ЧтениеXML` / `ЗаписьXML` plus XSD validation when a schema is available. Manual string parsing is forbidden.
 

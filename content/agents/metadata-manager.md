@@ -64,23 +64,22 @@ After completing the task, provide:
 
 See the **MCP Tool Calling** section in the project's `AGENTS.md` and the `mcp-1c-tools` skill (`content/skills/mcp-1c-tools/SKILL.md`) for MCP tool descriptions. Follow the `powershell-windows` skill for shell commands.
 
-**Search discipline:** Follow `content/rules/mcp-first-search.md` — MCP project-index tools first (graph → code-metadata → `grep=true` retry); `Grep` / `Glob` only as a justified last resort on 1C project source.
+**Search discipline:** Follow `content/rules/mcp-first-search.md` — bsl-analyzer project-index tools first (`search search_code` semantic → `search find_code` lexical retry → `graph` / `metadata`); `Grep` / `Glob` only as a justified last resort on 1C project source.
 
-**Key tools for metadata work (1c-code-metadata-mcp):**
-- **metadatasearch** — verify metadata object existence and structure
-- **get_metadata_details** — get full object structure: attributes with types, tabular parts, synonyms
-- **search_forms** — find similar existing forms by object/form name
-- **inspect_form_layout** — get full form structure: elements, bindings, commands, events
-- **get_xsd_schema** — get XSD schema for metadata type before generating XML
-- **verify_xml** — validate generated XML against XSD after generation
-- **codesearch** — find existing module code patterns
-- **search_function** — find BSL procedures/functions by name
-- **graph_dependencies** — analyze object dependencies before modifications
+**Key tools for metadata work (bsl-analyzer-workspace):**
+- **`metadata` action `object`** — verify metadata object existence and get its structural passport: attributes with types, tabular sections, dimensions, resources, forms
+- **`metadata` action `tree` / `info`** — browse the configuration structure, find objects by category
+- **`metadata` action `form`** — get full form structure: element tree, attributes, commands, event handlers; use it to find and study similar existing forms before scaffolding a new one
+- **`search` action `search_code` / `find_code`** — find existing module code patterns
+- **`graph` action `resolve` → `node`** — find BSL procedures/functions by name and read their bodies
+- **`graph` action `neighbors`** (`edge_kinds` / `dir` / `provenance`) — analyze object dependencies before modifications
+
+**XSD / XML validation (partial gap — no direct tool):** there is no `get_xsd_schema` / `verify_xml` equivalent. Use **`diagnostics` action `file` / `workspace`** for BSL / metadata findings, and the **`1c-metadata-manage` skill** PowerShell tooling (v8unpack / XML tooling) for XSD-level schema and XML validation.
 
 **Other tools:**
-- **docsearch** — verify platform functions and XML element names
-- **templatesearch** — find examples of metadata structures
-- **syntaxcheck** — validate BSL module code (limit: 1 per cycle by default, up to 3 only on substantive defects — see `AGENTS.md → MCP Tool Calling → B.1`)
+- **`bsl-analyzer-reference syntax_help` / `search`** — verify platform functions and XML element names
+- **`search` action `search_code`** over existing project metadata modules + **v8std** (`v8std_search`) — find examples of metadata structures (there is no template library in this stack)
+- **`diagnostics` action `file`** — validate BSL module code (the offline analyzer gate); the per-cycle re-run budget (1 by default, ≤3 only on substantive defects, no no-change repeats) is shared with Напарник `check_1c_code` / `review_1c_code` — see `AGENTS.md → MCP Tool Calling → B.1`
 
 ## Important Rules
 

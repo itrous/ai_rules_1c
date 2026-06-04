@@ -519,22 +519,18 @@ The PowerShell scripts under `tools/1c-meta-{compile,edit,info,remove,validate}/
 
 ## MCP Integration
 
-- **get_object_dossier** — Comprehensive structural passport in one call: structure, forms, subscriptions, roles, dependencies, code modules, business info. Use as the first step before creating/modifying/removing objects.
-- **metadatasearch** — Verify object names don't conflict, find objects to remove and their relationships. Use `object_type` filter to narrow results.
-- **get_metadata_details** — Get full object structure: attribute types, tabular parts, synonyms, properties. Use for verifying attribute types and references.
-- **metadatasearch** (`names_only=true`) — Find similar metadata objects for XML reference before generating new XML.
-- **get_xsd_schema** — Get XSD schema for the metadata type to validate generated XML structure.
-- **verify_xml** — Validate generated or modified metadata XML against XSD before committing.
-- **search_code** — Find BSL code references to objects (prefer over `codesearch` and Grep; supports semantic/fulltext/hybrid search with detail levels L0–L3).
-- **codesearch** — Find code references in raw BSL files (fallback when `search_code` is not available).
-- **trace_impact** — Recursive multi-level impact analysis before removal or modification (preferred over `graph_dependencies` for deep dependency chains).
-- **find_objects_using_object** — Find all objects referencing the given object in their attributes/dimensions/resources before removal.
-- **find_usages_of_object** — Attribute-level reference analysis: which specific attributes reference the object.
-- **graph_dependencies** — Flat dependency overview (who uses this / what it uses).
-- **docsearch** — Look up platform documentation for metadata type properties and valid property values when investigating validation errors.
-- **business_search** — Semantic search of related objects when creating configuration objects.
-- **answer_metadata_question** — Natural-language questions about object structure (meta-info provides more detailed structural analysis).
-- **check_1c_code** — Verify BSL code in object modules after fixing structural issues (syntax, logic, performance).
+- **`metadata` action `object`** (bsl-analyzer-workspace) — Structural passport in one call: attributes (with types), tabular sections, dimensions, resources, forms. Use as the first step before creating/modifying/removing objects; pair with `graph` action `node`/`neighbors` for dependencies and code modules.
+- **`metadata` action `tree`** — Verify object names don't conflict, browse the configuration structure, find objects to remove. `graph` action `resolve` to confirm an exact (mis-cased / partial) name.
+- **`metadata` action `object`** — Get full object structure: attribute types, tabular parts, resources, properties. Use for verifying attribute types and references.
+- **`metadata` action `tree`** — Find similar metadata objects for XML reference before generating new XML.
+- Validate generated or modified metadata XML against XSD using this skill's XML/XSD tooling (no dedicated `verify_xml`/`get_xsd_schema` MCP tool in this stack); run **`diagnostics` action `file`** for analyzer findings before committing.
+- **`search` action `search_code`** (semantic) / **`find_code`** (lexical / FTS) — Find BSL code references to objects (prefer over Grep). Drill into a full body via `graph` action `node` `detail=bodies` using the returned `graph_id`.
+- **`graph` action `neighbors`** — Multi-level impact analysis before removal or modification; filter `edge_kinds` (`query_ref`, `data_binding`, `manager_access`, `contains`, …) and use `dir` for direction.
+- **`graph` action `neighbors`** filtered on the data-reference edge kinds — Find all objects referencing the given object in their attributes/dimensions/resources before removal.
+- **`graph` action `neighbors`** / **`callers`** — Reference analysis: which objects / routines reference the object.
+- **`bsl-analyzer-reference search` / `syntax_help`** — Look up platform documentation for metadata type properties and valid property values when investigating validation errors; **v8std** for the standard behind a finding.
+- For semantic "related objects" / natural-language questions about an object there is no metadata-description index in this stack — use `metadata` structure + `search` action `search_code`, or 1С:Напарник `ask_1c_ai` as a hint (never authority).
+- **check_1c_code** (1С:Напарник) — Verify BSL code in object modules after fixing structural issues (syntax, logic, performance); **`diagnostics` action `file`** is the offline analyzer.
 - **review_1c_code** — Check code style and ITS standards compliance in object modules.
 
 ## SDD Integration

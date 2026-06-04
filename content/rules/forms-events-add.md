@@ -37,7 +37,7 @@ The value inside the `<Event>` tag is the name of the handler procedure in the f
 
 For the complete and authoritative list of available events, do **not** rely on this table. Use:
 
-- `bsl_scope_members` with `member_type="events"` and the relevant context (e.g. `"УправляемаяФорма"`, `"ПолеФормы"`, `"ТаблицаФормы"`, `"КнопкаФормы"`).
-- `inspect_form_layout` on a similar existing form — every wired-up event is listed under each element with its handler name.
-- `docinfo` / `docsearch` against the platform documentation for the specific form-item type.
-- `search_forms` to locate canonical examples that already use the event you need.
+- `bsl-analyzer-reference syntax_help` for the platform API of the relevant context type (e.g. `УправляемаяФорма`, `ПолеФормы`, `ТаблицаФормы`, `КнопкаФормы`). Note: this gives the type's platform API, not a guaranteed full event-member enumeration — cross-check against a real form below.
+- `metadata` action `form` on a similar existing form — every wired-up event is listed under each element with its handler name.
+- `bsl-analyzer-reference search` / `syntax_help` against the platform documentation for the specific form-item type.
+- `metadata` action `tree` / `form` (and `search` action `search_code`) to locate canonical examples that already use the event you need.

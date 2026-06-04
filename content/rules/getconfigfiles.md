@@ -23,7 +23,7 @@ Only `INFOBASE_PATH` and `PLATFORM_PATH` are blocking — if either is empty, **
 
 ## Steps
 
-**Step 1.** Compose the list of objects to export in `repoobjects.txt` (one full metadata-object name per line, e.g. `Справочник.Контрагенты`). Build the list via `metadatasearch` or `search_metadata` (see `content/skills/mcp-1c-tools/SKILL.md`).
+**Step 1.** Compose the list of objects to export in `repoobjects.txt` (one full metadata-object name per line, e.g. `Справочник.Контрагенты`). Build the list via `metadata` action `tree` / `object` (and `graph` action `resolve` to confirm exact names) — see `content/skills/mcp-1c-tools/SKILL.md`.
 
 **Step 2.** Choose the export tool:
 

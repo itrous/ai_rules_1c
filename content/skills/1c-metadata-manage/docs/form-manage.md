@@ -1098,14 +1098,13 @@ In addition to the form-compile / form-info / form-add / form-edit / form-remove
 
 ## MCP Integration
 
-- **get_object_dossier** — Comprehensive structural passport of the metadata object including all its forms, attributes, dependencies, and code in one call. Use as the first step before form design.
-- **search_forms** — Find similar existing forms in the configuration by object name, form name, or title. Use as a starting point for new form design.
-- **inspect_form_layout** — Get full form structure: element hierarchy with types and data bindings, form attributes, commands, event handlers, visibility, accessibility. Use to study existing forms before creating or modifying.
-- **metadatasearch** — Verify metadata object existence and structure before creating forms; verify object types, attribute names, and metadata types when defining attributes. Use `names_only=true` to get compact object lists.
-- **get_metadata_details** — Get full attribute types, tabular parts, synonyms for the metadata object the form belongs to.
-- **get_xsd_schema** — Get XSD schema for form XML (`object_type="Форма"`). Use before generating or modifying Form.xml to know valid structure.
-- **verify_xml** — Validate generated or modified Form.xml against XSD (`object_type="Форма"`). Always validate before committing.
-- **templatesearch** — Find real form examples in the codebase, similar form implementations, and patterns when designing forms.
+- **`metadata` action `object`** (bsl-analyzer-workspace) — Structural passport of the metadata object including its forms, attributes, tabular sections, and resources. Use as the first step before form design; pair with `graph` action `node`/`neighbors` for dependencies and code.
+- **`metadata` action `tree`** / **`form`** — Find similar existing forms in the configuration by object name, form name, or title. Use as a starting point for new form design.
+- **`metadata` action `form`** — Get full form structure: element hierarchy with types and data bindings, form attributes, commands, event handlers. Use to study existing forms before creating or modifying.
+- **`metadata` action `tree`** — Verify metadata object existence and structure before creating forms; verify object types, attribute names, and metadata types when defining attributes; `graph` action `resolve` for exact name resolution.
+- **`metadata` action `object`** — Get full attribute types, tabular parts, resources for the metadata object the form belongs to.
+- Validate generated or modified Form.xml against XSD using this skill's XML/XSD tooling (no dedicated `get_xsd_schema`/`verify_xml` MCP tool in this stack); run **`diagnostics` action `file`** for analyzer findings. Always validate before committing.
+- **`search` action `search_code` / `find_code`** — Find real form examples in the codebase, similar form implementations, and patterns when designing forms (no template-library MCP in this stack; search the real project code, plus **v8std** for canonical patterns).
 
 ## SDD Integration
 

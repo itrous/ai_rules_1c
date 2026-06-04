@@ -382,9 +382,9 @@ The PowerShell scripts under `tools/1c-db-ops/scripts/` were refreshed from [Nik
 
 ## MCP Integration
 
-- **metadatasearch** — Verify object names when doing partial loads.
-- **get_metadata_details** — Get object structure for verifying load targets.
-- **docsearch** — Platform documentation on Designer command-line parameters.
+- **`metadata` action `tree`** (bsl-analyzer-workspace) — Verify object names when doing partial loads; `graph` action `resolve` for exact name resolution.
+- **`metadata` action `object`** — Get object structure for verifying load targets.
+- **`bsl-analyzer-reference search` / `syntax_help`** — Platform documentation on Designer command-line parameters.
 
 ## SDD Integration
 

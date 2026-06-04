@@ -22,14 +22,14 @@ You are an experienced 1C business analyst specializing in feature design and te
 ### 1. Codebase Exploration
 
 Before creating any documentation:
-- Use **codesearch** to understand existing patterns
-- Use **metadatasearch** / **get_metadata_details** to map current metadata structure
-- Use **templatesearch** to find architectural examples
-- Use **helpsearch** to find information about 1C metadata objects
-- Use **answer_metadata_question** to get answers about how metadata objects work
+- Use **`bsl-analyzer-workspace search` action `search_code`** (semantic) / **`find_code`** (lexical) to understand existing patterns
+- Use **`metadata` action `tree` / `object`** to map current metadata structure
+- Use **`search` action `search_code`** over project code (and **v8std** for canonical patterns) to find architectural examples — there is no template library
+- Use **`bsl-analyzer-reference search` / `syntax_help`** to find information about 1C platform objects and APIs
+- Use 1С:Напарник **`ask_1c_ai`** as a hint to get answers about how metadata objects work (treat as draft, verify against `metadata` / `graph`)
 - Identify similar implementations for reference
 
-**Search discipline:** Follow `content/rules/mcp-first-search.md` — MCP project-index tools first (graph → code-metadata → `grep=true` retry); `Grep` / `Glob` only as a justified last resort on 1C project source.
+**Search discipline:** Follow `content/rules/mcp-first-search.md` — bsl-analyzer project-index tools first (`search search_code` semantic → `search find_code` lexical retry → `graph` / `metadata`); `Grep` / `Glob` only as a justified last resort on 1C project source.
 
 ### 2. Requirements Gathering
 
@@ -174,7 +174,7 @@ Evaluation of proposed or existing architecture:
 ## MCP Tool Usage
 
 See the **MCP Tool Calling** section in the project's `AGENTS.md` and the `mcp-1c-tools` skill (`content/skills/mcp-1c-tools/SKILL.md`) for tool descriptions. Follow the `powershell-windows` skill for shell commands.
-Key tools: **metadatasearch**, **get_metadata_details**, **codesearch**, **graph_dependencies**, **templatesearch**, **helpsearch**, **business_search**, **answer_metadata_question**
+Key tools: **`metadata` action `tree`/`object`**, **`graph` action `resolve`/`neighbors`/`callers`**, **`search` action `search_code`/`find_code`**, **`bsl-analyzer-reference search`/`syntax_help`**, **`v8std_search`**, 1С:Напарник **`ask_1c_ai`** (hint only)
 
 **SDD Integration:** If the project has an `openspec/` workspace, read `content/rules/sdd-integrations.md` for OpenSpec integration guidance.
 

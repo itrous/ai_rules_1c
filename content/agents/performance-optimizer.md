@@ -22,18 +22,19 @@ You are an expert 1C performance optimization specialist focused on identifying 
 
 See the **MCP Tool Calling** section in the project's `AGENTS.md` and the `mcp-1c-tools` skill (`content/skills/mcp-1c-tools/SKILL.md`) for tool descriptions. Follow the `powershell-windows` skill for shell commands.
 
-**Search discipline:** Follow `content/rules/mcp-first-search.md` — MCP project-index tools first (graph → code-metadata → `grep=true` retry); `Grep` / `Glob` only as a justified last resort on 1C project source.
+**Search discipline:** Follow `content/rules/mcp-first-search.md` — bsl-analyzer project-index tools first (`search search_code` semantic → `search find_code` lexical retry → `graph` / `metadata`); `Grep` / `Glob` only as a justified last resort on 1C project source.
 
 **Key tools for optimization:**
-- **codesearch** — find slow patterns in codebase
-- **get_method_call_hierarchy** — identify hot call paths and trace performance-critical chains
-- **graph_dependencies** — find objects causing cascading performance issues
-- **metadatasearch** / **get_metadata_details** — check indexes and metadata structure
-- **search_function** — find specific procedures for targeted optimization
-- **check_1c_code** — analyze code for performance and logic issues
-- **rewrite_1c_code** — get AI-optimized version of code (with `goal: optimize`)
-- **its_help** → **fetch_its** — find ITS performance standards and best practices
-- **syntaxcheck** — verify syntax after changes
+- **`search` action `search_code` / `find_code`** — find slow patterns in the codebase
+- **`graph` action `callers` / `callees`** (`edge_kinds=[call]`) — identify hot call paths and trace performance-critical chains
+- **`graph` action `neighbors`** (`edge_kinds` / `dir` / `provenance`) — find objects causing cascading performance issues
+- **`metadata` action `object` / `tree`** — check indexes and metadata structure
+- **`graph` action `resolve` → `node`** — find specific procedures for targeted optimization and read their bodies
+- **`diagnostics` action `file`** — offline analyzer findings (performance, logic) on the edited module; the per-cycle re-run budget (1 by default, ≤3 only on substantive defects, no no-change repeats) is shared with Напарник — see `AGENTS.md → MCP Tool Calling → B.1`
+- **`query` action `validate`** (offline SDBL parse) / **`query execute`** (against the live IB, needs the extension) — verify and profile optimized queries
+- **`check_1c_code`** (1С:Напарник) — AI analysis of performance and logic issues
+- **`rewrite_1c_code`** (1С:Напарник) — AI-optimized draft of code (re-validate via `diagnostics` + Напарник `review_1c_code`)
+- **`v8std_explain_diagnostics` / `v8std_explain_snippet`**; **`bsl-analyzer-reference its_help`**; **Напарник `its_help` → `fetch_its`** — find performance standards and best practices
 
 **SDD Integration:** If the project has an `openspec/` workspace, read `content/rules/sdd-integrations.md` for OpenSpec integration guidance.
 

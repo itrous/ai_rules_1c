@@ -43,16 +43,18 @@
 #     from the `mcp` object — OpenCode only swaps characters outside
 #     [a-zA-Z0-9_-] for `_`, it does NOT prepend a letter). Some providers
 #     (Moonshot/Kimi) reject any function name that does not start with a letter
-#     (`^[a-zA-Z_][a-zA-Z0-9-_]{2,63}$`), so a key like `1c-syntax-checker-mcp`
-#     yields `1c-syntax-checker-mcp_syntaxcheck` and the whole request fails with
+#     (`^[a-zA-Z_][a-zA-Z0-9-_]{2,63}$`), so a key like `1c-code-check-mcp`
+#     yields `1c-code-check-mcp_check_1c_code` and the whole request fails with
 #     "function name is invalid, must start with a letter". Rendering rule:
-#     a leading `1c`/`1C` becomes `onec` (`1c-syntax-checker-mcp` ->
-#     `onec-syntax-checker-mcp`, `1C-docs-mcp` -> `onec-docs-mcp`); any other
-#     non-letter-leading id gets an `mcp-` prefix. Canonical ids in
-#     content/mcp-servers.json and in the docs stay `1c-...`; only the rendered
-#     OpenCode key changes. /checkmcp + /doctor detect tools by their bare names
-#     (syntaxcheck, docinfo, ...), not by the server prefix, so the rename is
-#     transparent to them.
+#     a leading `1c`/`1C` becomes `onec` (`1c-code-check-mcp` ->
+#     `onec-code-check-mcp`); any other non-letter-leading id gets an `mcp-`
+#     prefix. The current stack's other ids (`bsl-analyzer-workspace`,
+#     `bsl-analyzer-reference`, `v8std`) already start with a letter, so they
+#     pass through unchanged. Canonical ids in content/mcp-servers.json and in
+#     the docs stay as-is; only the rendered OpenCode key changes for the
+#     `1c`-leading id. /checkmcp + /doctor detect tools by their bare names
+#     (search, syntax_help, v8std_search, check_1c_code, ...), not by the server
+#     prefix, so the rename is transparent to them.
 #   - On-demand rules are placed under `.opencode/rules/` and referenced from
 #     AGENTS.md by file path. OpenCode itself does not auto-discover them — the
 #     directory is just a stable, predictable location that the agent reads

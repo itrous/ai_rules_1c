@@ -6,7 +6,7 @@ category: workflow
 
 # Subagent Pipeline — Full-Cycle Flow
 
-**When to load this file:** any task that exceeds the **quick-fix** threshold defined in `AGENTS.md → Triage: Quick-fix vs Full-cycle` (more than ~20 changed lines, more than one module, any metadata change, any architectural impact, any non-trivial bug). For quick-fix tasks the pipeline is unnecessary overhead — a direct edit + `syntaxcheck` is enough.
+**When to load this file:** any task that exceeds the **quick-fix** threshold defined in `AGENTS.md → Triage: Quick-fix vs Full-cycle` (more than ~20 changed lines, more than one module, any metadata change, any architectural impact, any non-trivial bug). For quick-fix tasks the pipeline is unnecessary overhead — a direct edit + `diagnostics file` is enough.
 
 **Companion files:** `subagents.md` (catalog of subagents and when to delegate), `verification-checklist.md` (the closing gate of the pipeline).
 
@@ -74,7 +74,7 @@ The pipeline removes those failure modes by separating **what to build** (planne
 
 ### Stage 1 — Triage (parent agent)
 
-Apply the matrix from `AGENTS.md → Triage: Quick-fix vs Full-cycle`. **Only** full-cycle tasks enter the pipeline. If the task is a quick-fix, edit directly and skip to stage 5 with a minimal verification (`syntaxcheck` only).
+Apply the matrix from `AGENTS.md → Triage: Quick-fix vs Full-cycle`. **Only** full-cycle tasks enter the pipeline. If the task is a quick-fix, edit directly and skip to stage 5 with a minimal verification (`diagnostics file` only).
 
 If the user asks for a small change that **looks** like a quick-fix but the change touches a transactional path, a public common-module export, an extension's adopted object, an event subscription / scheduled job / RLS condition, or metadata wired into existing behavior (rename / remove / immediate-use, RLS / indexing / fill-check changes) — promote it to full-cycle. **Isolated metadata additions** that satisfy the "Isolated metadata addition" clause in `AGENTS.md → Triage` (new independent register / defined type / enumeration / constant / unwired attribute, with no consumer touched in the same change) stay on the quick-fix path. When in doubt, full-cycle wins.
 
@@ -92,7 +92,7 @@ The plan must satisfy these acceptance criteria before stage 3:
 
 - Each task is small enough that an enthusiastic junior 1C developer with no project context can execute it: typically 1 file / 1 procedure / ≤ ~20 changed lines per task.
 - Each task names exact file paths and exact procedure names — no "update the related modules".
-- Each task has a verification step (`syntaxcheck`, an MCP query, an assertion, a manual reproduction).
+- Each task has a verification step (`diagnostics file`, an MCP query, an assertion, a manual reproduction).
 - Risks and rollback are explicit, especially for metadata changes (UUID stability, register movements, role grants).
 - The plan is reviewed by the user. The user's approval is a hard gate — do not proceed to stage 3 without it.
 
@@ -113,7 +113,7 @@ The implementation subagent is bound by the plan from stage 2. Out-of-plan chang
 The implementation subagent is responsible for:
 
 - editing the BSL / XML;
-- running its own pre-handoff `syntaxcheck` on every touched module;
+- running its own pre-handoff `diagnostics file` on every touched module;
 - preserving module headers, regions and the project's code style (`dev-standards-core.md`);
 - removing only the imports / variables / procedures **that its own changes made unused** — never pre-existing dead code;
 - summarizing the diff against the plan, file by file;
@@ -162,7 +162,7 @@ The block is **not** a marketing summary — it is a machine-readable inventory.
 **Downstream subagent obligations:**
 
 - The downstream subagent **must** read the `## Upstream Handoff` block first and treat `### Artifacts`, `### Public surface`, and `### Locked decisions` as authoritative. Re-deriving them by reading files is forbidden.
-- The downstream subagent **must not** call `Read`, `get_module_structure`, `metadatasearch`, `get_metadata_details`, `inspect_form_layout`, or `Glob` on objects / files already listed in the Handoff "for context" or "to verify". A targeted call is allowed **only** when a concrete detail needed for the current edit is missing from the Handoff (e.g. exact UUID, exact line of a TODO marker inside an existing region, full attribute list of a tabular section the upstream summarized as `<attribute / tabular section …>`). Before such a call, the subagent must state in one sentence which detail is missing and why the Handoff alone is insufficient.
+- The downstream subagent **must not** call `Read`, `graph node`, `metadata tree`, `metadata object`, `metadata form`, or `Glob` on objects / files already listed in the Handoff "for context" or "to verify". A targeted call is allowed **only** when a concrete detail needed for the current edit is missing from the Handoff (e.g. exact UUID, exact line of a TODO marker inside an existing region, full attribute list of a tabular section the upstream summarized as `<attribute / tabular section …>`). Before such a call, the subagent must state in one sentence which detail is missing and why the Handoff alone is insufficient.
 - The downstream subagent **must** preserve `### Locked decisions` unless the user (not the parent) explicitly authorizes a revision. If a locked decision turns out to block correct implementation, raise a `CONFUSION` instead of silently overriding it.
 - The downstream subagent appends its own Handoff block at the top of **its** report if a further implementation subagent is expected; otherwise its report goes straight into stage 4a.
 
@@ -197,7 +197,7 @@ Two important constraints from the existing `subagents.md`:
 When the user asks for a review, the subagent looks at:
 
 - anti-patterns from `anti-patterns.md` and `platform-solutions.md`;
-- ITS standards via `its_help` → `fetch_its`;
+- ITS standards via `bsl-analyzer-reference its_help` and **v8std** (`v8std_search` → `v8std_get_page`), with Напарник `its_help` → `fetch_its` for versioned material;
 - BSL LS warnings via `review_1c_code`;
 - query patterns, transactional safety, lock granularity, posting boundaries.
 

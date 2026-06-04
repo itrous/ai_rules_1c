@@ -21,11 +21,11 @@ Invoke this skill when:
 
 When implementing new functionality:
 
-1. **First, search SSL** — use `ssl_search` MCP tool with keywords describing your need
-   - Example: `ssl_search("фоновое задание прогресс")`
-   - Example: `ssl_search("копирование структуры")`
+1. **First, search SSL** — use `search` action `search_code` (semantic) / `find_code` (lexical) over the project's БСП modules (in `src/cf`) with keywords describing your need; **v8std** for БСП-related standards
+   - Example: `search` action `search_code` "фоновое задание прогресс"
+   - Example: `search` action `search_code` "копирование структуры"
 
-2. **Check existing patterns** — use `codesearch` to find how similar tasks are solved in the codebase
+2. **Check existing patterns** — use `search` action `find_code` (lexical) / `search_code` (semantic) to find how similar tasks are solved in the codebase
 
 3. **Use SSL if available** — it's tested, optimized, and maintained
 

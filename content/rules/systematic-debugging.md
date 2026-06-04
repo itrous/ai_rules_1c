@@ -8,7 +8,7 @@ category: quality
 
 **When to load this file:** any task that involves diagnosing a bug, runtime error, regression, performance regression, or unexpected behavior — whether the parent agent is debugging directly or delegating to the `1c-error-fixer` / `1c-performance-optimizer` subagent.
 
-**Goal:** replace ad-hoc trial-and-error with a structured root-cause loop. Skipping a phase is a defect, the same way as skipping `syntaxcheck` after editing code.
+**Goal:** replace ad-hoc trial-and-error with a structured root-cause loop. Skipping a phase is a defect, the same way as skipping `diagnostics file` after editing code.
 
 The methodology is adapted from the `systematic-debugging` skill of [obra/superpowers](https://github.com/obra/superpowers) and combined with 1C platform mechanics (debugger, `ЖурналРегистрации`, `ОтчетПоЖурналуРегистрации`, `ПоказатьЗначение`, `СообщитьПользователю`, `Replay` of background jobs, technological log).
 
@@ -37,12 +37,12 @@ Required outputs of this phase:
 
 Tools to use:
 
-- **`vcloggetlasterror`** (`1c-data-mcp`, when the server is exposed in the session) — pull the most recent error from `ЖурналРегистрации` of the live IB without leaving the agent: timestamp, event, affected metadata object, data presentation, full description. Run it immediately after the user's repro attempt to confirm an error landed in the log and on what object. Limitation: only the single most recent record with `УровеньЖурналаРегистрации.Ошибка` in the last 24 h. Wider filters / older records → fall back to the Configurator's `ОтчетПоЖурналуРегистрации` or to a custom `ВыгрузитьЖурналРегистрации` wrapped in `vcexecutecode`.
+- **`debug`** (`bsl-analyzer-workspace`, needs the live-IB extension) — inspect the event log of the connected IB without leaving the agent: pull the most recent error (timestamp, event, affected metadata object, data presentation, full description). Run it immediately after the user's repro attempt to confirm an error landed in the log and on what object. For wider filters / older records → fall back to the Configurator's `ОтчетПоЖурналуРегистрации` or to a custom `ВыгрузитьЖурналРегистрации` run via `execute`.
 - **Configurator → Debug** (`Отладка → Подключиться`) to attach to the running session, capture the call stack, inspect locals.
 - **`ЖурналРегистрации`** filter by date range / user / event / metadata to find the failing call. For high-volume errors prefer `ВыгрузитьЖурналРегистрации` to a `ТаблицаЗначений` for offline analysis.
 - **Technological log** (`logcfg.xml`) for platform-level events (DBMS errors, deadlocks, lock conflicts, timeouts) when the application log is not enough.
 - **`ОбработкаПроведения`** + the `Replay` mechanism for documents — re-post the failing document under the debugger.
-- **MCP**: `codesearch` / `search_code` to find the exact procedure that printed the error message, `search_function` to locate it by name, `get_module_structure` to get its surroundings.
+- **MCP**: `search` action `search_code` (semantic) / `find_code` (lexical) to find the exact procedure that printed the error message; `graph` action `resolve` → `node` to locate it by name and read its surroundings (the module node lists its members, `detail=bodies` returns source).
 
 If you cannot reproduce, **stop**. Ask the user for missing input data, screenshots, the exact step sequence, or a copy of the infobase. Do not guess.
 
@@ -58,12 +58,12 @@ For each hypothesis state:
 
 Tools to use:
 
-- **`trace_call_chain`** (`direction="callers"`) to map all the call paths that reach the failing routine.
-- **`trace_impact`** to map which objects the failing routine depends on (registers it reads, common modules it calls, metadata it touches).
-- **`get_method_call_hierarchy`** as a fallback when the graph server is unavailable.
-- **`docinfo`** to verify that a built-in function actually does what you assume — many bugs are platform-version-dependent (`ТекущаяДатаСеанса` vs `ТекущаяДата`, `НайтиПоНаименованию` collation, `ПолучитьСтруктуруХраненияБазыДанных` differences across versions).
-- **`its_help` → `fetch_its`** to verify the documented behaviour of the platform mechanism you suspect.
-- **`ask_1c_ai`** as a hint generator (treat as a draft — do not let an AI hint replace the falsifying experiment).
+- **`graph` action `callers`** (with `edge_kinds=[call]` for a pure who-calls-whom view) to map all the call paths that reach the failing routine.
+- **`graph` action `callees`** / **`neighbors`** to map which objects the failing routine depends on (registers it reads, common modules it calls, metadata it touches — filter `edge_kinds` such as `query_ref` / `data_binding` / `manager_access`).
+- **`graph` action `overview` / `schema`** first on an unfamiliar configuration to learn the available edge kinds and id formats before composing parameter-rich calls.
+- **`bsl-analyzer-reference syntax_help`** to verify that a built-in function actually does what you assume — many bugs are platform-version-dependent (`ТекущаяДатаСеанса` vs `ТекущаяДата`, `НайтиПоНаименованию` collation, `ПолучитьСтруктуруХраненияБазыДанных` differences across versions).
+- **`bsl-analyzer-reference its_help`** (and **v8std** `v8std_search` → `v8std_get_page`) to verify the documented behaviour of the platform mechanism you suspect; Напарник `its_help` → `fetch_its` for versioned ITS material.
+- **`ask_1c_ai`** (1С:Напарник) as a hint generator (treat as a draft — do not let an AI hint replace the falsifying experiment).
 
 Produce at least 2 hypotheses. A single hypothesis is anchoring bias — challenge it with a competing one even if it feels obviously right.
 
@@ -77,8 +77,8 @@ Allowed experimental tools (read-only or scoped to a copy of the infobase):
 - **`ЗаписьЖурналаРегистрации("Debug.<Module>", УровеньЖурналаРегистрации.Информация, , , <Структура>)`** — temporary log lines, removed before the fix is committed.
 - **`ПоказатьЗначение(Неопределено, <Объект>)`** for client-side diagnostics; **`СообщитьПользователю` / `Сообщение.Сообщить()`** for server-side.
 - **read-only queries** in the configurator's `Console of queries` (`Консоль запросов`) against the failing data — never mutate.
-- **`validatequery`** → **`vcexecutequery`** (`1c-data-mcp`, when the server is exposed) — parse-check, then execute a falsifying query against the live IB without leaving the agent. Always read-only. Cheap evidence for a data-state hypothesis ("does this register really have a non-zero balance for this dimension set", "does this attribute really equal X for this reference").
-- **`vcexecutecode`** (`1c-data-mcp`, when exposed) — run a small **read-only** BSL fragment to verify a platform-version-specific or metadata-state hypothesis (type checks, `ЗначениеЗаполнено`, `Метаданные.НайтиПоПолномуИмени`, `ПолучитьФункциональнуюОпцию`). Default to read-only; **never** wrap `Записать()` / `Удалить()` / `НачалоТранзакции` / DML in `vcexecutecode` without explicit user consent and a rollback plan — and only on a copy IB. See `content/skills/mcp-1c-tools/docs/1c-data-mcp.md → Safety` for full rules.
+- **`query` action `validate`** (static / offline SDBL parse, no IB needed) → **`query` action `execute`** (`bsl-analyzer-workspace`, needs the live-IB extension) — parse-check, then execute a falsifying query against the live IB without leaving the agent. Always read-only. Cheap evidence for a data-state hypothesis ("does this register really have a non-zero balance for this dimension set", "does this attribute really equal X for this reference").
+- **`execute`** (`bsl-analyzer-workspace`, needs the live-IB extension) — run a small **read-only** BSL fragment to verify a platform-version-specific or metadata-state hypothesis (type checks, `ЗначениеЗаполнено`, `Метаданные.НайтиПоПолномуИмени`, `ПолучитьФункциональнуюОпцию`). Default to read-only; **never** wrap `Записать()` / `Удалить()` / `НачалоТранзакции` / DML in `execute` without explicit user consent and a rollback plan — and only on a copy IB. See `content/skills/mcp-1c-tools/docs/bsl-analyzer-workspace.md → execute / debug` for full rules.
 - **`КопироватьИнформационнуюБазу`** or a SQL snapshot **before** any destructive experiment. The rule is: experiments either run on a copy or do not run at all.
 
 Forbidden during experiments:
@@ -102,7 +102,7 @@ Required:
 - The fix touches only the code paths involved in the confirmed hypothesis (Surgical Changes principle from `AGENTS.md`).
 - A regression guard exists: a query, a `ЖурналРегистрации` event, an `Утверждение`, or — at minimum — a documented manual reproduction step in the change description.
 - All temporary `ЗаписьЖурналаРегистрации("Debug.*"`, `ПоказатьЗначение`, hard-coded values, breakpoints, and TODO markers introduced in phase 3 are removed.
-- Verification chain runs cleanly: `syntaxcheck` → `check_1c_code` → `review_1c_code` → `trace_impact` against the touched objects (see `verification-checklist.md`).
+- Verification chain runs cleanly: `diagnostics file` → `check_1c_code` → `review_1c_code` → `graph callers`/`neighbors` against the touched objects (see `verification-checklist.md`).
 - The original reproduction case from phase 1 no longer triggers the symptom.
 
 If the fix requires architectural rework (signature changes in shared common modules, metadata edits, a new register), escalate — call the `1c-architect` or `1c-developer` subagent rather than expanding the scope of the bug fix yourself.

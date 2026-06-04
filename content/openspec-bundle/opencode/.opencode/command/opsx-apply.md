@@ -11,7 +11,7 @@ Implement tasks from an OpenSpec change.
 Apply phase has a **single consolidated preflight round** at the start, then near-silence during the implementation loop. The user round-trip budget for apply is one batched question round upfront, not one micro-question per task.
 
 - **Preflight (step 5b below)** — bundle every genuine remaining blocker into one `AskUserQuestion` call. Scope: empty highly-desirable `.dev.env` fields needed by tasks in this session's plan, plus `design.md → ## Open Questions` items whose dependent task is in this session's plan. Nothing else.
-- **Implementation loop (step 6 below)** — **no mid-loop questions** except: a new fact surfaces from the live state that conflicts with a locked artifact decision (metadata missing, platform-version mismatch with `CompatibilityMode`, БСП subsystem absent, typical-form structure blocks the planned approach); or the user explicitly re-opens a decision. Routine ambiguity in a task ("what name for this private helper?", "function or procedure?", "what level of logging?") is **never** a legitimate mid-loop pause — it is a propose-phase defect that the propose-phase clarification gate should have caught. Make a reasonable, codebase-consistent choice and record it via `remember` or `memory.md` Captured-during-work.
+- **Implementation loop (step 6 below)** — **no mid-loop questions** except: a new fact surfaces from the live state that conflicts with a locked artifact decision (metadata missing, platform-version mismatch with `CompatibilityMode`, БСП subsystem absent, typical-form structure blocks the planned approach); or the user explicitly re-opens a decision. Routine ambiguity in a task ("what name for this private helper?", "function or procedure?", "what level of logging?") is **never** a legitimate mid-loop pause — it is a propose-phase defect that the propose-phase clarification gate should have caught. Make a reasonable, codebase-consistent choice and record it in the host agent's project memory (`memory.md` / `AGENTS.md → Project memory`) as a Captured-during-work note.
 - **The full rule lives in `content/rules/sdd-integrations.md → Apply-phase clarification discipline`. Load it on any non-trivial apply session.**
 
 ## Banned questions at apply time (hard list)
@@ -33,7 +33,7 @@ The `## Genuine blockers` block in the opening message lists only blockers that 
 
 Items from `design.md → ## Open Questions` are **unresolved by definition** — the design phase deliberately deferred them to the user. The parent agent does **not** have authority to close them unilaterally at apply time. The only legitimate closure path is a `CONFUSION` block per `AGENTS.md → Development Procedure → 1. Think Before Coding`, then wait for the user's choice.
 
-A self-justifying paragraph that picks an option ("принимаю минимальный и обратимый вариант — добавляем в роли X и Y") is a defect of the same severity as bypassing `syntaxcheck`, even if the option is genuinely the best one. **Doubly so** when the picked option modifies typical (standard) configuration objects — typical roles (`Roles\<типовая_роль>\Ext\Rights.xml`), typical forms, typical modules, typical event subscriptions — because that silently modifies the standard config without authorisation.
+A self-justifying paragraph that picks an option ("принимаю минимальный и обратимый вариант — добавляем в роли X и Y") is a defect of the same severity as bypassing `diagnostics file`, even if the option is genuinely the best one. **Doubly so** when the picked option modifies typical (standard) configuration objects — typical roles (`Roles\<типовая_роль>\Ext\Rights.xml`), typical forms, typical modules, typical event subscriptions — because that silently modifies the standard config without authorisation.
 
 Required `CONFUSION` shape for an Open Question (verbatim from `AGENTS.md → 1.`):
 
@@ -142,8 +142,8 @@ The agent MAY include its own preference inside the block as a recommendation ("
    - **Error or hard blocker** — a tool / build / validator returns a result that genuinely blocks progress (not a style warning, not a routine BSL defect — fix those and continue).
    - **User interrupts** — obvious.
 
-   **Forbidden mid-loop pauses** (each is an apply-phase defect of the same severity as skipping `syntaxcheck`):
-   - "Task is unclear" — propose-phase defect. Make a reasonable, codebase-consistent choice and record it via `remember` (project memory) or `memory.md` Captured-during-work. Do not interrupt the user.
+   **Forbidden mid-loop pauses** (each is an apply-phase defect of the same severity as skipping `diagnostics file`):
+   - "Task is unclear" — propose-phase defect. Make a reasonable, codebase-consistent choice and record it in the host agent's project memory (`memory.md` / `AGENTS.md → Project memory`) as a Captured-during-work note. Do not interrupt the user.
    - "What name for this private helper?" / "function or procedure?" / "what logging level?" / "should I add a comment here?" — same.
    - "Should I pause now to re-confirm decision X from `design.md`?" — never. Confirmation is not a question.
    - "Should I pause for an empty `.dev.env` field that the user already declined in preflight?" — never. The dependent block is marked `deferred-to-user` in `tasks.md`; proceed with everything else.
@@ -210,7 +210,7 @@ What would you like to do?
 **Guardrails**
 - Keep going through tasks until done or blocked
 - Always read context files before starting (from the apply instructions output)
-- **Bundle every legitimate question into the single preflight round at step 5b — no mid-loop questions except for the narrow critical exceptions in step 6.** "If task is ambiguous, pause and ask" is **not** the apply rule for this project — the rule is in `content/rules/sdd-integrations.md → Apply-phase clarification discipline`. Routine ambiguity is a propose-phase defect; make a reasonable, codebase-consistent choice and record it via `remember` or `memory.md` Captured-during-work.
+- **Bundle every legitimate question into the single preflight round at step 5b — no mid-loop questions except for the narrow critical exceptions in step 6.** "If task is ambiguous, pause and ask" is **not** the apply rule for this project — the rule is in `content/rules/sdd-integrations.md → Apply-phase clarification discipline`. Routine ambiguity is a propose-phase defect; make a reasonable, codebase-consistent choice and record it in the host agent's project memory (`memory.md` / `AGENTS.md → Project memory`) as a Captured-during-work note.
 - If a live-state fact conflicts with a locked artifact decision, raise a `CONFUSION` block and pause; this is the only routine mid-loop pause.
 - Keep code changes minimal and scoped to each task
 - Update task checkbox immediately after completing each task

@@ -22,20 +22,20 @@ You are an expert 1C code refactoring specialist focused on code cleanup, consol
 
 See the **MCP Tool Calling** section in the project's `AGENTS.md` and the `mcp-1c-tools` skill (`content/skills/mcp-1c-tools/SKILL.md`) for tool descriptions. Follow the `powershell-windows` skill for shell commands.
 
-**Search discipline:** Follow `content/rules/mcp-first-search.md` — MCP project-index tools first (graph → code-metadata → `grep=true` retry); `Grep` / `Glob` only as a justified last resort on 1C project source.
+**Search discipline:** Follow `content/rules/mcp-first-search.md` — bsl-analyzer project-index tools first (`search search_code` semantic → `search find_code` lexical retry → `graph` / `metadata`); `Grep` / `Glob` only as a justified last resort on 1C project source.
 
 **Key tools for refactoring:**
-- **codesearch** — find all usages of code being refactored
-- **search_function** — find specific procedures/functions by name
-- **get_module_structure** — understand module structure before editing
-- **graph_dependencies** — analyze object-level dependencies and impact before refactoring
-- **get_method_call_hierarchy** — trace call chains to understand what will be affected
-- **metadatasearch** / **get_metadata_details** — verify metadata dependencies and structure
-- **templatesearch** — find better patterns to apply
-- **syntaxcheck** — verify refactored code syntax
-- **check_1c_code** — check for performance and logic issues
-- **review_1c_code** — check style and ITS standards compliance
-- **rewrite_1c_code** — get AI-improved version of code (with `goal` parameter: `optimize`, `readability`)
+- **`graph` action `callers`** (`edge_kinds=[call]`) and **`neighbors`** (`edge_kinds` / `dir` / `provenance`) — find all callers / usages of code being refactored (the reliable way to confirm something is dead). Note: dynamic / string-based calls are invisible to the graph — still cross-check with `search find_code`.
+- **`search` action `find_code` / `search_code`** — find usages, literals, and dynamic-call patterns the graph can miss
+- **`graph` action `resolve` → `node`** — find specific procedures/functions by name and read their bodies (`detail=bodies`)
+- **`graph` action `node`** on `module/common/<Module>` — understand module structure (members array) before editing
+- **`graph` action `callees`** — trace call chains to understand what will be affected
+- **`metadata` action `object` / `tree`** — verify metadata dependencies and structure
+- **`search` action `search_code`** over project code + **v8std** (`v8std_search`) — find better patterns to apply (no template library in this stack)
+- **`diagnostics` action `file`** — offline analyzer gate on refactored modules; the per-cycle re-run budget (1 by default, ≤3 only on substantive defects, no no-change repeats) is shared with Напарник — see `AGENTS.md → MCP Tool Calling → B.1`
+- **`check_1c_code`** (1С:Напарник) — AI check for performance and logic issues
+- **`review_1c_code`** (1С:Напарник) — AI check of style and ITS standards compliance
+- **`rewrite_1c_code`** (1С:Напарник) — AI-improved draft of code (re-validate via `diagnostics` + Напарник `review_1c_code`)
 
 **SDD Integration:** If the project has an `openspec/` workspace, read `content/rules/sdd-integrations.md` for OpenSpec integration guidance.
 
@@ -60,8 +60,8 @@ b) Categorize by risk level:
 ### 2. Risk Assessment
 
 For each item to refactor:
-- Check all usages via `codesearch`
-- Verify no dynamic calls (string-based calls)
+- Check all usages via `graph callers` / `neighbors`, then `search find_code` for what the graph can miss
+- Verify no dynamic calls (string-based calls) — these are invisible to the graph, so confirm with `search find_code`
 - Check if part of public interface
 - Review dependencies
 - Test impact on related code
@@ -120,14 +120,14 @@ Follow the performance guidelines in the `## Persona` section of `AGENTS.md`:
 ## Safety Checklist
 
 Before removing ANYTHING:
-- [ ] Search all references via `codesearch`
-- [ ] Check for dynamic/string-based calls
+- [ ] Search all references via `graph callers` / `neighbors`, then `search find_code`
+- [ ] Check for dynamic/string-based calls (invisible to the graph — confirm with `search find_code`)
 - [ ] Verify not part of public API
 - [ ] Review dependent code
 - [ ] Test affected functionality
 
 After each change:
-- [ ] Syntax check passes
+- [ ] `diagnostics file` clean on the refactored module
 - [ ] No new errors introduced
 - [ ] Related tests still work
 - [ ] Document the change
@@ -169,7 +169,7 @@ After each change:
 
 ## Testing
 
-- [ ] Syntax check passed
+- [ ] `diagnostics file` clean on refactored modules
 - [ ] Functionality verified
 - [ ] Performance tested
 - [ ] No regressions found
@@ -190,7 +190,7 @@ After each change:
 ## Success Metrics
 
 After refactoring:
-- ✅ All syntax checks pass
+- ✅ `diagnostics file` clean on all refactored modules
 - ✅ No new errors introduced
 - ✅ Functionality preserved
 - ✅ Performance same or better

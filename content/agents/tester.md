@@ -24,7 +24,7 @@ You are an expert 1C testing specialist focused on validating code changes throu
 
 Follow the `powershell-windows` skill for all PowerShell commands (use `;` not `&&`, `Invoke-WebRequest` not `curl`, etc.).
 
-**Search discipline:** Follow `content/rules/mcp-first-search.md` — when inspecting BSL / metadata to validate test results, use MCP project-index tools first (graph → code-metadata → `grep=true` retry); `Grep` / `Glob` only as a justified last resort on 1C project source. `Grep` on deployment / event logs and other non-project-source artifacts is fine without an MCP attempt.
+**Search discipline:** Follow `content/rules/mcp-first-search.md` — when inspecting BSL / metadata to validate test results, use bsl-analyzer project-index tools first (`search search_code` semantic → `search find_code` lexical retry → `graph` / `metadata`); `Grep` / `Glob` only as a justified last resort on 1C project source. `Grep` on deployment / event logs and other non-project-source artifacts is fine without an MCP attempt. For runtime validation against the live IB, `debug` (event-log inspection) and `execute` / `query execute` are available when the bsl-analyzer 1C extension is published.
 
 ## Testing Prerequisites
 

@@ -93,19 +93,18 @@ Pass criterion: OpenSpec exists, and `openspec/project.md` is present and meanin
 
 ## Check 5. MCP session connectivity
 
-Check MCP at two levels:
+The stack has two transports — check them differently:
 
 1. **Current session tools** — verify that expected tools are visible in the current agent tool schema when the server is configured:
-   - `syntaxcheck` for `1c-syntax-checker-mcp`;
-   - `templatesearch`, `remember`, `recall` for `1c-templates-mcp`;
-   - `ssl_search` for `1c-ssl-mcp`;
-   - `docinfo`, `docsearch` for `1C-docs-mcp`;
-   - `metadatasearch`, `codesearch`, `search_function`, `get_module_structure` for `1c-code-metadata-mcp`;
-   - `search_metadata`, `get_object_dossier`, `trace_impact`, `trace_call_chain` for `1c-graph-metadata-mcp`;
-   - `check_1c_code`, `review_1c_code`, `its_help`, `fetch_its` for `1c-code-check-mcp`.
-2. **Transport fallback** — when tools are missing but MCP config lists the server, run the `/checkmcp` algorithm: HTTP endpoint check, Docker state, and exact next action.
+   - `search`, `graph`, `metadata`, `diagnostics`, `query`, `execute`, `debug` for `bsl-analyzer-workspace` (stdio; action-dispatched);
+   - `search`, `syntax_help`, `its_help` for `bsl-analyzer-reference` (stdio);
+   - `v8std_search`, `v8std_get_page`, `v8std_get_related`, `v8std_explain_snippet`, `v8std_explain_diagnostics` for `v8std` (http);
+   - `check_1c_code`, `review_1c_code`, `rewrite_1c_code`, `modify_1c_code`, `ask_1c_ai`, `search_1c_documentation`, `onec_help`, `its_help`, `fetch_its`, `diff_1c_documentation_versions`, `config_help` for `1c-code-check-mcp` / 1С:Напарник (http).
+2. **Transport fallback** — when tools are missing but the MCP config lists the server, run the `/checkmcp` algorithm:
+   - **stdio** (`bsl-analyzer-workspace` / `bsl-analyzer-reference`) — there is **no HTTP endpoint to ping**. Check that `bsl-analyzer` resolves on `PATH` (or the absolute path in the rendered config) and that the client launches it from the project root (so `--source-dir .` resolves). The index builds lazily — if the tools are present, poll `search status` / `graph status` (and `diagnostics catalog` to confirm diagnostics responds — there is no `diagnostics status` action); "still building" is **normal**, report it as **OK (building)**, not a failure.
+   - **http** (`v8std` / `1c-code-check-mcp`) — probe the endpoint (`https://ai.v8std.ru/mcp`, `http://localhost:8007/mcp`). A `down` v8std usually means no internet; a `down` Напарник means its local wrapper is not running; `HTTP 401/403` on Напарник means a missing / wrong `NAPARNIK_TOKEN` in the wrapper's environment.
 
-Pass criterion: required MCP tools for the expected 1C workflow are visible in the current session. HTTP-only availability is **WARN** because the agent still cannot call the tools until the client reconnects.
+Pass criterion: the required MCP tools for the expected 1C workflow are visible in the current session. For stdio servers, "tools present but index still building" is **OK**; "tools missing because `bsl-analyzer` is not on PATH / client did not launch it" is **WARN** (config present) or **FAIL** (no config). HTTP-only availability for the http servers (endpoint reachable but tools not yet in the session) is **WARN** because the agent cannot call the tools until the client reconnects. Semantic `search_code` being disabled (no `EMBEDDING_*`) is **WARN**, not **FAIL** — lexical `find_code` + `graph` + `metadata` still work. A missing 1С:Напарник is **WARN** — the rules fall back to `diagnostics` + v8std for review.
 
 ## Check 6. Active rules suitability
 
