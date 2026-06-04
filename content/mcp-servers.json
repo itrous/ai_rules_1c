@@ -1,67 +1,34 @@
 {
   "servers": [
     {
-      "id": "1c-code-metadata-mcp",
-      "description": "1C metadata search, code navigation, forms inspection, XSD schemas and validation",
-      "transport": "http",
-      "url": "http://localhost:8000/mcp",
-      "connectionId": "1c_metadata_service_001",
+      "id": "bsl-analyzer-workspace",
+      "description": "bsl-analyzer workspace profile (project index): code search (find_code / search_code), whole-config call graph (graph), metadata browsing (metadata), analyzer diagnostics (diagnostics), SDBL query validation/execution (query), live-IB BSL execution (execute) and debugging (debug). Local stdio server; run `bsl-analyzer mcp install` for the canonical machine-specific entry (absolute binary path + optional EMBEDDING_* for semantic search).",
+      "transport": "stdio",
+      "command": "bsl-analyzer",
+      "args": ["mcp", "serve", "--profile", "workspace", "--source-dir", "."],
       "required": false
     },
     {
-      "id": "1c-syntax-checker-mcp",
-      "description": "BSL syntax validation via BSL Language Server",
-      "transport": "http",
-      "url": "http://localhost:8002/mcp",
-      "connectionId": "1c_lsp_service_001",
+      "id": "bsl-analyzer-reference",
+      "description": "bsl-analyzer reference profile: 1C platform API reference and docs search (search: find_docs / search_docs), exact API syntax (syntax_help), ITS expert help (its_help). Local stdio server; covers the platform-documentation role.",
+      "transport": "stdio",
+      "command": "bsl-analyzer",
+      "args": ["mcp", "serve", "--profile", "reference"],
       "required": false
     },
     {
-      "id": "1C-docs-mcp",
-      "description": "1C platform documentation search (docsearch, docinfo)",
+      "id": "v8std",
+      "description": "v8std.ru standards knowledge base (read-only HTTP): 1C:Enterprise BSL/SDBL development standards, ACC/BSLLS/EDT diagnostics, aliases, relations, source URLs and clean Markdown (v8std_search, v8std_get_page, v8std_get_related, v8std_explain_snippet, v8std_explain_diagnostics).",
       "transport": "http",
-      "url": "http://localhost:8003/mcp",
-      "connectionId": "1c_docs_service_001",
-      "required": false
-    },
-    {
-      "id": "1c-templates-mcp",
-      "description": "Code templates library and implementation examples search",
-      "transport": "http",
-      "url": "http://localhost:8004/mcp",
-      "connectionId": "1c_templates_service_001",
-      "required": false
-    },
-    {
-      "id": "1c-graph-metadata-mcp",
-      "description": "Graph-based metadata queries and impact analysis (Neo4j / Cypher)",
-      "transport": "http",
-      "url": "http://localhost:8006/mcp",
-      "connectionId": "1c_graph_metadata_service_001",
+      "url": "https://ai.v8std.ru/mcp",
       "required": false
     },
     {
       "id": "1c-code-check-mcp",
-      "description": "1C code review and quality checking (1С:Напарник) — check_1c_code, review_1c_code, ITS docs",
+      "description": "1С:Напарник — AI code review and technical checking (check_1c_code, review_1c_code), AI rewrite/modify (rewrite_1c_code, modify_1c_code, ask_1c_ai), versioned platform docs (search_1c_documentation, onec_help, diff_1c_documentation_versions, config_help) and ITS standards (its_help, fetch_its). Requires a running 1С:Напарник MCP wrapper and a NAPARNIK_TOKEN; URL below is the default local wrapper port.",
       "transport": "http",
       "url": "http://localhost:8007/mcp",
       "connectionId": "1c_code_check_service_001",
-      "required": false
-    },
-    {
-      "id": "1c-ssl-mcp",
-      "description": "Standard Subsystems Library (БСП / SSL) function search",
-      "transport": "http",
-      "url": "http://localhost:8008/mcp",
-      "connectionId": "1c_ssl_service_001",
-      "required": false
-    },
-    {
-      "id": "1c-data-mcp",
-      "description": "1C data management and analysis (HTTP service published on the infobase; URL is derived from INFOBASE_PUBLISH_URL in .dev.env by the installer). The endpoint MUST be reachable without a password — configure anonymous access in default.vrd (technical user with empty password), otherwise the MCP client receives HTTP 401/403 and the tools do not appear.",
-      "transport": "http",
-      "url": "{INFOBASE_PUBLISH_URL}/hs/mcp",
-      "connectionId": "1c_data_mcp_001",
       "required": false
     }
   ]
