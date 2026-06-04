@@ -1,5 +1,7 @@
 # 1c-rules — набор правил и инструментов разработки на 1С для ИИ-агентов
 
+> **Форк-редакция под bsl-analyzer.** Это форк [`comol/ai_rules_1c`](https://github.com/comol/ai_rules_1c) (автор оригинала — comol), перенацеленный с исходного MCP-стека на стек **bsl-analyzer** (`bsl-analyzer-workspace` / `bsl-analyzer-reference`) + `v8std` + 1С:Напарник. Полный маппинг инструментов и отличия — в [`MIGRATION-bsl-analyzer.md`](MIGRATION-bsl-analyzer.md).
+
 > **Если ты ИИ-агент** и тебе нужно установить или обновить правила в проекте, перейди к [`AGENT-INSTALL.md`](AGENT-INSTALL.md) и следуй инструкциям оттуда. Текущий файл — обзор для разработчика.
 
 `1c-rules` — это переносимый набор правил, ролей субагентов, on-demand инструкций и интеграций для разработки в `1С:Предприятие 8` (BSL) с помощью ИИ-агентов. Содержимое раскладывается в проект единым установщиком и адаптируется под формат каждого инструмента.
@@ -21,7 +23,7 @@
 
 Установка спроектирована как протокол, который выполняет сам ИИ-агент. Откройте проект в любимом ИИ-агенте (Cursor / Claude Code / Codex / OpenCode / Kilo Code) и отправьте сообщение:
 
-> Установи правила из `https://github.com/comol/ai_rules_1c` по `AGENT-INSTALL.md`.
+> Установи правила из `https://github.com/itrous/ai_rules_1c` по `AGENT-INSTALL.md`.
 
 Всё. Остальное — клонирование репозитория, определение активных инструментов, миграция существующих `AGENTS.md` / `CLAUDE.md`, запросы перед разрушительными действиями — описано в [`AGENT-INSTALL.md`](AGENT-INSTALL.md), который агент прочитает сам.
 
@@ -30,7 +32,7 @@
 Если агент не справляется (ограниченная среда, нет FS-доступа, нужен детерминированный CI-запуск) — тот же протокол реализован как PowerShell-скрипт `install.ps1`:
 
 ```powershell
-git clone https://github.com/comol/ai_rules_1c.git $env:TEMP\1c-rules
+git clone https://github.com/itrous/ai_rules_1c.git $env:TEMP\1c-rules
 & $env:TEMP\1c-rules\install.ps1 init -Source $env:TEMP\1c-rules
 ```
 
@@ -39,7 +41,7 @@ git clone https://github.com/comol/ai_rules_1c.git $env:TEMP\1c-rules
 Параметр `-Source` также принимает URL напрямую — в этом случае установщик сам делает shallow-clone в кэш под `$env:TEMP` (ключ кэша — хэш URL) и переиспользует его при повторных запусках; требует `git` в `PATH`:
 
 ```powershell
-.\install.ps1 init -Source https://github.com/comol/ai_rules_1c
+.\install.ps1 init -Source https://github.com/itrous/ai_rules_1c
 ```
 
 Команды: `init` / `update` / `add <tool>` / `remove [<tool>]` / `doctor` / `eject`.
